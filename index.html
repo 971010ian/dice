@@ -2,72 +2,177 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f2e9d8">
   <meta name="description" content="跳過仙人掌，跑得越遠越好。">
-  <title>荒野衝刺 | 像素跑酷</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <script src="script.js" defer></script>
+  <title>荒野衝刺</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: #26382f;
+      background: #f2e9d8;
+      font-family: "Noto Sans TC", sans-serif;
+    }
+
+    main { width: min(900px, 100%); }
+    h1 { margin: 0 0 8px; font-size: clamp(2rem, 7vw, 4rem); }
+    p { color: #827b6d; }
+
+    .game {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #c6aa8a;
+      background: #f8d7a1;
+    }
+
+    canvas { display: block; width: 100%; height: auto; }
+
+    .score {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      font-family: monospace;
+      font-size: 1.2rem;
+    }
+
+    button {
+      margin-top: 16px;
+      padding: 12px 20px;
+      color: white;
+      border: 0;
+      background: #c45b3c;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover { background: #a94930; }
+    button:focus-visible { outline: 3px solid #26382f; outline-offset: 3px; }
+  </style>
 </head>
 <body>
-  <main class="game-shell">
-    <header class="topbar">
-      <a class="brand" href="index.html" aria-label="荒野衝刺首頁">
-        <span class="brand-mark" aria-hidden="true">R</span>
-        <span>荒野衝刺</span>
-      </a>
-      <span class="edition">PIXEL RUNNER <span>／</span> NO. 01</span>
-    </header>
+  <main>
+    <h1>荒野衝刺</h1>
+    <p>按空白鍵或點按鈕跳躍，避開仙人掌。</p>
 
-    <section class="game-section" aria-labelledby="page-title">
-      <div class="game-heading">
-        <div>
-          <p class="eyebrow">THE LONG WAY HOME</p>
-          <h1 id="page-title">日落前，<span>跑起來。</span></h1>
-        </div>
-        <p class="intro">荒野很寬，仙人掌可不會讓路。</p>
-      </div>
+    <div class="game">
+      <canvas id="game" width="900" height="300" aria-label="跑酷遊戲"></canvas>
+      <div class="score">距離 <span id="score">0</span></div>
+    </div>
 
-      <div class="game-frame">
-        <div class="scoreboard" aria-label="遊戲分數">
-          <div class="life-block">
-            <span>生命</span>
-            <div class="life-meter" id="lifeMeter" role="img" aria-label="生命值：4 格">
-              <span class="life-pip">♥</span><span class="life-pip">♥</span><span class="life-pip">♥</span><span class="life-pip">♥</span>
-            </div>
-          </div>
-          <div class="coin-block" aria-label="金幣數量">
-            <span class="coin-icon" aria-hidden="true">●</span>
-            <span>金幣</span>
-            <strong id="coinCount">00</strong>
-          </div>
-          <div class="shield-status" id="shieldStatus" aria-live="polite" aria-label="護盾未啟動">護盾待機</div>
-          <div class="score-block"><span>距離</span><strong id="score">00000</strong></div>
-          <div class="score-divider" aria-hidden="true"></div>
-          <div class="score-block best-score"><span>最佳</span><strong id="bestScore">00000</strong></div>
-        </div>
-        <canvas id="gameCanvas" width="960" height="320" tabindex="0" aria-label="像素跑酷遊戲畫面"></canvas>
-        <div class="game-overlay" id="gameOverlay">
-          <p class="overlay-kicker" id="overlayKicker">READY, RUNNER?</p>
-          <h2 id="overlayTitle">準備出發</h2>
-          <p id="overlayText">按空白鍵開始並起跳，空中再按一次即可二段跳。</p>
-          <button class="start-button" id="startButton" type="button">開始奔跑 <span aria-hidden="true">→</span></button>
-        </div>
-        <div class="game-caption"><span>DESERT ROUTE / 01</span><span id="gameStatus">WAITING</span></div>
-      </div>
-
-      <div class="game-controls">
-        <div class="control-hint"><kbd>SPACE</kbd><span>開始／二段跳</span></div>
-        <span class="control-separator" aria-hidden="true"></span>
-        <p>空中再按一次空白鍵，可使出二段跳。</p>
-        <button class="jump-button" id="jumpButton" type="button" aria-label="跳躍">跳！</button>
-      </div>
-    </section>
-
-    <footer class="footer"><span>FIELD NOTES — 001</span><span>一場只屬於你的荒野長跑。</span></footer>
+    <button id="jump" type="button">跳躍</button>
   </main>
+
+  <script>
+    const canvas = document.querySelector("#game");
+    const ctx = canvas.getContext("2d");
+    const scoreOutput = document.querySelector("#score");
+
+    const ground = 250;
+    const player = { x: 90, y: ground - 42, size: 42, velocity: 0 };
+    let obstacles = [];
+    let score = 0;
+    let running = true;
+    let lastTime = 0;
+    let spawnTimer = 0;
+
+    function jump() {
+      if (!running) {
+        obstacles = [];
+        score = 0;
+        player.y = ground - player.size;
+        player.velocity = 0;
+        running = true;
+      }
+
+      if (player.y >= ground - player.size) {
+        player.velocity = -620;
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      sky.addColorStop(0, "#f1b877");
+      sky.addColorStop(1, "#f9e6bd");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#493b35";
+      ctx.fillRect(0, ground, canvas.width, canvas.height - ground);
+
+      ctx.fillStyle = "#354d3f";
+      ctx.fillRect(player.x, player.y, player.size, player.size);
+
+      ctx.fillStyle = "#c45b3c";
+      for (const obstacle of obstacles) {
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      }
+
+      if (!running) {
+        ctx.fillStyle = "#26382f";
+        ctx.textAlign = "center";
+        ctx.font = "bold 32px sans-serif";
+        ctx.fillText("遊戲結束，按按鈕重新開始", canvas.width / 2, 130);
+      }
+    }
+
+    function frame(time) {
+      const delta = Math.min((time - lastTime) / 1000, 0.04);
+      lastTime = time;
+
+      if (running) {
+        score += delta * 10;
+        scoreOutput.textContent = Math.floor(score);
+
+        player.velocity += 1600 * delta;
+        player.y += player.velocity * delta;
+
+        if (player.y > ground - player.size) {
+          player.y = ground - player.size;
+          player.velocity = 0;
+        }
+
+        spawnTimer -= delta;
+        if (spawnTimer <= 0) {
+          obstacles.push({ x: canvas.width, y: ground - 42, width: 24, height: 42 });
+          spawnTimer = 1 + Math.random() * 1.1;
+        }
+
+        for (const obstacle of obstacles) {
+          obstacle.x -= 330 * delta;
+
+          const hit = player.x < obstacle.x + obstacle.width
+            && player.x + player.size > obstacle.x
+            && player.y < obstacle.y + obstacle.height
+            && player.y + player.size > obstacle.y;
+
+          if (hit) running = false;
+        }
+
+        obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
+      }
+
+      draw();
+      requestAnimationFrame(frame);
+    }
+
+    document.querySelector("#jump").addEventListener("click", jump);
+
+    document.addEventListener("keydown", event => {
+      if (event.code === "Space" || event.code === "ArrowUp") {
+        event.preventDefault();
+        jump();
+      }
+    });
+
+    requestAnimationFrame(frame);
+  </script>
 </body>
 </html>
