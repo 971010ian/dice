@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f2e9d8">
+  <meta name="description" content="跳過仙人掌，跑得越遠越好。">
+  <title>荒野衝刺 | 像素跑酷</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="荒野衝刺首頁">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        <span>荒野衝刺</span>
+      </a>
+      <span class="edition">PIXEL RUNNER <span>／</span> NO. 01</span>
+    </header>
+
+    <section class="game-section" aria-labelledby="page-title">
+      <div class="game-heading">
+        <div>
+          <p class="eyebrow">THE LONG WAY HOME</p>
+          <h1 id="page-title">日落前，<span>跑起來。</span></h1>
+        </div>
+        <p class="intro">荒野很寬，仙人掌可不會讓路。</p>
+      </div>
+
+      <div class="game-frame">
+        <div class="scoreboard" aria-label="遊戲分數">
+          <div class="life-block">
+            <span>生命</span>
+            <div class="life-meter" id="lifeMeter" role="img" aria-label="生命值：4 格">
+              <span class="life-pip">♥</span><span class="life-pip">♥</span><span class="life-pip">♥</span><span class="life-pip">♥</span>
+            </div>
+          </div>
+          <div class="coin-block" aria-label="金幣數量">
+            <span class="coin-icon" aria-hidden="true">●</span>
+            <span>金幣</span>
+            <strong id="coinCount">00</strong>
+          </div>
+          <div class="shield-status" id="shieldStatus" aria-live="polite" aria-label="護盾未啟動">護盾待機</div>
+          <div class="score-block"><span>距離</span><strong id="score">00000</strong></div>
+          <div class="score-divider" aria-hidden="true"></div>
+          <div class="score-block best-score"><span>最佳</span><strong id="bestScore">00000</strong></div>
+        </div>
+        <canvas id="gameCanvas" width="960" height="320" tabindex="0" aria-label="像素跑酷遊戲畫面"></canvas>
+        <div class="game-overlay" id="gameOverlay">
+          <p class="overlay-kicker" id="overlayKicker">READY, RUNNER?</p>
+          <h2 id="overlayTitle">準備出發</h2>
+          <p id="overlayText">按空白鍵開始並起跳，空中再按一次即可二段跳。</p>
+          <button class="start-button" id="startButton" type="button">開始奔跑 <span aria-hidden="true">→</span></button>
+        </div>
+        <div class="game-caption"><span>DESERT ROUTE / 01</span><span id="gameStatus">WAITING</span></div>
+      </div>
+
+      <div class="game-controls">
+        <div class="control-hint"><kbd>SPACE</kbd><span>開始／二段跳</span></div>
+        <span class="control-separator" aria-hidden="true"></span>
+        <p>空中再按一次空白鍵，可使出二段跳。</p>
+        <button class="jump-button" id="jumpButton" type="button" aria-label="跳躍">跳！</button>
+      </div>
+    </section>
+
+    <footer class="footer"><span>FIELD NOTES — 001</span><span>一場只屬於你的荒野長跑。</span></footer>
+  </main>
+</body>
+</html>
